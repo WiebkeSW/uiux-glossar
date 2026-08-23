@@ -54,6 +54,8 @@ const DATA = [
    demo:`<div class="mega-wrap"><span class="btn btn-ghost btn-xs" tabindex="0" style="cursor:default;">Leistungen ▾</span><div class="mega-panel"><div><b>Beratung</b><br>Strategie</div><div><b>Umsetzung</b><br>Design</div><div><b>Support</b><br>Wartung</div></div></div>`, note:"Maus drüber halten"},
   {t:"Pagination", d:"Nummerierte Seiten-Navigation, um lange Listen/Tabellen in Häppchen aufzuteilen.",
    demo:`<nav style="display:flex;gap:4px;"><button class="btn btn-ghost btn-xs" data-action="select-chip">1</button><button class="btn btn-ghost btn-xs active" data-action="select-chip">2</button><button class="btn btn-ghost btn-xs" data-action="select-chip">3</button></nav>`, note:"klicken"},
+  {t:"Pill-Navigation", d:"Vollständig abgerundete Kapsel-Buttons in einer Reihe, ein Pill pro Seite/Abschnitt — Klick springt direkt dorthin, der aktive Zustand ist farblich abgesetzt. Anders als Badge/Chip (reine Markierung) ist die Pill hier ein eigenständiges Navigationselement, typisch für Folien-Decks, Onboarding-Screens oder mehrstufige Formulare.", kw:"pill, slide-pills, foliennavigation, seitenwechsel",
+   demo:`<div class="mini-tabs pillnav" style="text-align:center;"><input type="radio" class="tabA" name="pillnav-{{uid}}" id="pnA-{{uid}}" checked><label for="pnA-{{uid}}">Start</label><input type="radio" class="tabB" name="pillnav-{{uid}}" id="pnB-{{uid}}"><label for="pnB-{{uid}}">Vertiefung A</label><input type="radio" class="tabC" name="pillnav-{{uid}}" id="pnC-{{uid}}"><label for="pnC-{{uid}}">Vertiefung B</label><div class="tab-panel panelA">Folie 1 von 3</div><div class="tab-panel panelB">Folie 2 von 3</div><div class="tab-panel panelC">Folie 3 von 3</div></div>`, note:"klicken"},
   {t:"Accordion", d:"Liste aufklappbarer Abschnitte — beim Öffnen eines Punkts klappt meist der vorherige automatisch zu.", kw:"details, summary",
    demo:`<div style="width:100%;text-align:left;"><details name="acc-{{uid}}" class="mini-details" open><summary>Abschnitt 1</summary><div>Inhalt zu Abschnitt 1</div></details><details name="acc-{{uid}}" class="mini-details"><summary>Abschnitt 2</summary><div>Inhalt zu Abschnitt 2</div></details></div>`, note:"klicken"},
   {t:"Skip Link (Sprunglink)", d:"Für Tastatur-/Screenreader-Nutzer unsichtbarer Link, der direkt zum Hauptinhalt springt — erscheint erst bei Tastaturfokus.",
@@ -183,8 +185,19 @@ const ALL_TERMS = DATA.flatMap(cat => cat.items.map(it => ({...it, c: cat.c})));
 const categories = ["Alle", ...DATA.map(cat => cat.c)];
 let activeCat = "Alle";
 
+// Eine Farbe pro Kategorie (unabhängig von den semantischen ok/warn/bad-Tönen der Demos) —
+// dient nur der schnellen Zuordnung beim Scannen, nicht der Statusanzeige.
+const CAT_COLORS = {
+  "Layout & Navigation": "#1E5568",
+  "Bausteine & Formulare": "#8A6A2E",
+  "Feedback & Status": "#9C4368",
+  "Interaktion": "#D97D4A",
+  "Design-Prinzipien": "#5B4B8A",
+  "Daten & Prozess": "#3F7A63"
+};
+
 function renderChips(){
-  chipsEl.innerHTML = categories.map(c => `<button class="chip${c===activeCat?' active':''}" data-cat="${c}">${c}</button>`).join('');
+  chipsEl.innerHTML = categories.map(c => `<button class="chip${c===activeCat?' active':''}" data-cat="${c}"${CAT_COLORS[c] ? ` style="--cat:${CAT_COLORS[c]}"` : ''}>${c}</button>`).join('');
   chipsEl.querySelectorAll('.chip').forEach(btn => {
     btn.addEventListener('click', () => { activeCat = btn.dataset.cat; renderChips(); renderGrid(); });
   });
@@ -207,8 +220,9 @@ function renderGrid(){
   grid.innerHTML = filtered.map((term, i) => {
     const uid = 'u' + i + '-' + Math.floor(Math.random()*100000);
     const demo = term.demo.split('{{uid}}').join(uid);
+    const catColor = CAT_COLORS[term.c];
     return `
-    <div class="term-card">
+    <div class="term-card"${catColor ? ` style="--cat:${catColor}"` : ''}>
       <div class="term-head"><span class="term-name">${term.t}</span><span class="cat-tag">${term.c}</span></div>
       <div class="demo-stage">${demo}</div>
       ${term.note ? `<div class="demo-note">${term.note}</div>` : ''}
